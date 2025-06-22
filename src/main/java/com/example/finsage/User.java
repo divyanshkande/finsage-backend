@@ -35,8 +35,18 @@ public class User {
     private String provider; // "local" or "google"
 
     private String role = "USER";
+    
+    private double income;
 
-    public String getEmail() {
+    public double getIncome() {
+		return income;
+	}
+
+	public void setIncome(double income) {
+		this.income = income;
+	}
+
+	public String getEmail() {
         return email;
     }
 
