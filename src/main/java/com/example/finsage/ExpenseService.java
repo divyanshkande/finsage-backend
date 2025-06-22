@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -76,5 +77,14 @@ public class ExpenseService {
         userRepo.save(user);
 
         return "Income updated successfully";
+    }
+
+	public List<Expense> filterExpenses(String email, String category, String dateStr) {
+        List<Expense> all = expenseRepo.findByUserEmail(email);
+
+        return all.stream()
+                .filter(e -> (category == null || e.getCategory().equalsIgnoreCase(category)) &&
+                             (dateStr == null || e.getDate().toString().equals(dateStr)))
+                .collect(Collectors.toList());
     }
 }

@@ -59,6 +59,18 @@ public class ExpenseController {
         return ResponseEntity.ok("Deleted");
     }
     
+   
+
+    @GetMapping("/filter")
+    public ResponseEntity<List<Expense>> filterExpenses(
+            @RequestParam(required = false) String category,
+            @RequestParam String email,
+            @RequestParam(required = false) String date // Format: yyyy-MM-dd
+    ) {
+        List<Expense> expenses = expenseService.filterExpenses(email, category, date);
+        return ResponseEntity.ok(expenses);
+    }
+    
     @GetMapping("/summary")
     public ResponseEntity<Map<String, Object>> getExpenseSummary(@RequestParam String email) {
         Map<String, Object> summary = expenseService.getExpenseSummary(email);

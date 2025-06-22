@@ -10,5 +10,6 @@ import com.example.finsage.model.Expense;
 public interface ExpenseRepository extends JpaRepository<Expense,Long> {
 	List<Expense> findByUserAndDate(User user, LocalDate date);
     List<Expense> findByUser(User user);
+    List<Expense> findByUserEmail(String email);
 
 }
