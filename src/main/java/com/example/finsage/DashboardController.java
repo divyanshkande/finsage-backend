@@ -22,4 +22,16 @@ public class DashboardController {
         Map<String, Object> summary = dashboardService.getDashboardSummary(email);
         return ResponseEntity.ok(summary);
     }
+    
+    @GetMapping("/monthly")
+    public ResponseEntity<Map<String, Double>> getMonthlySummary(Authentication auth) {
+        String email = auth.getName();
+        return ResponseEntity.ok(dashboardService.getMonthlyExpenses(email));
+    }
+
+    @GetMapping("/yearly")
+    public ResponseEntity<Map<String, Double>> getYearlySummary(Authentication auth) {
+        String email = auth.getName();
+        return ResponseEntity.ok(dashboardService.getYearlyExpenses(email));
+    }
 }

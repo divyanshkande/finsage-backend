@@ -46,4 +46,30 @@ public class DashboardService {
 
         return summary;
     }
+    
+    public Map<String, Double> getMonthlyExpenses(String email) {
+        User user = userRepo.findByEmail(email).orElseThrow();
+        List<Expense> expenses = expenseRepo.findByUser(user);
+        Map<String, Double> monthlyMap = new TreeMap<>();
+
+        for (Expense e : expenses) {
+            String month = e.getDate().toString().substring(0, 7); // e.g. "2025-05"
+            monthlyMap.put(month, monthlyMap.getOrDefault(month, 0.0) + e.getAmount());
+        }
+
+        return monthlyMap;
+    }
+
+    public Map<String, Double> getYearlyExpenses(String email) {
+        User user = userRepo.findByEmail(email).orElseThrow();
+        List<Expense> expenses = expenseRepo.findByUser(user);
+        Map<String, Double> yearlyMap = new TreeMap<>();
+
+        for (Expense e : expenses) {
+            String year = String.valueOf(e.getDate().getYear()); // e.g. "2025"
+            yearlyMap.put(year, yearlyMap.getOrDefault(year, 0.0) + e.getAmount());
+        }
+
+        return yearlyMap;
+    }
 }
