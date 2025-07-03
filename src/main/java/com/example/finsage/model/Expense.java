@@ -4,12 +4,14 @@ import java.time.LocalDate;
 
 import com.example.finsage.User;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -31,14 +33,25 @@ public class Expense {
     private Double amount;
 
     private String description;
-
+    @NotNull(message = "Date cannot be null")
     private LocalDate date;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private User user; // Linked to logged-in user
+    private User user; 
+    @Column(nullable = false)
+    private String title;
 
-    public Long getId() {
+
+    public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	public Long getId() {
 		return id;
 	}
 

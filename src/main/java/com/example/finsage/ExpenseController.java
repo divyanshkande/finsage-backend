@@ -53,26 +53,48 @@ public class ExpenseController {
         return ResponseEntity.ok(expenseService.getAllExpenses(user));
     }
 
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> delete(@PathVariable Long id) {
-        expenseService.deleteExpense(id);
-        return ResponseEntity.ok("Deleted");
-    }
-    
+//    @DeleteMapping("/{id}")
+//    public ResponseEntity<?> delete(@PathVariable Long id, Authentication auth) {
+//        String email = auth.getName();  // Extract logged-in user email from token
+//        expenseService.deleteExpenseById(id, email);  
+//        return ResponseEntity.ok("Deleted");
+//    }
+
    
 
     @GetMapping("/filter")
     public ResponseEntity<List<Expense>> filterExpenses(
-            @RequestParam(required = false) String category,
-            @RequestParam String email,
-            @RequestParam(required = false) String date // Format: yyyy-MM-dd
-    ) {
-        List<Expense> expenses = expenseService.filterExpenses(email, category, date);
-        return ResponseEntity.ok(expenses);
+        @RequestParam(required = false) String category,
+        @RequestParam(required = false) String date,
+        Authentication authentication) {
+        
+        String email = authentication.getName();
+        List<Expense> filtered = expenseService.filterExpenses(email, category, date);
+        return ResponseEntity.ok(filtered);
     }
-    
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteExpense(@PathVariable Long id, Authentication auth) {
+        String email = auth.getName();
+        expenseService.deleteExpenseById(id, email);
+        return ResponseEntity.ok("Deleted successfully");
+    }
+    @GetMapping("/summary/category")
+    public ResponseEntity<Map<String, Double>> getCategorySummary(Authentication auth) {
+        String email = auth.getName();
+        Map<String, Double> categoryData = expenseService.getCategoryWise(email);
+        return ResponseEntity.ok(categoryData);
+    }
+
+    @GetMapping("/summary/monthly")
+    public ResponseEntity<Map<String, Double>> getMonthlySummary(Authentication auth) {
+        String email = auth.getName();
+        Map<String, Double> monthlyData = expenseService.getMonthlyExpenses(email);
+        return ResponseEntity.ok(monthlyData);
+    }
+
     @GetMapping("/summary")
-    public ResponseEntity<Map<String, Object>> getExpenseSummary(@RequestParam String email) {
+    public ResponseEntity<Map<String, Object>> getExpenseSummary(Authentication auth) {
+        String email = auth.getName();
         Map<String, Object> summary = expenseService.getExpenseSummary(email);
 
         if (summary.containsKey("error")) {
@@ -81,12 +103,10 @@ public class ExpenseController {
 
         return ResponseEntity.ok(summary);
     }
-    
+
     @PutMapping("/update-income")
-    public ResponseEntity<String> updateIncome(
-            @RequestParam String email,
-            @RequestParam double income
-    ) {
+    public ResponseEntity<String> updateIncome(Authentication authentication, @RequestParam double income) {
+        String email = authentication.getName(); // <- From JWT
         String result = expenseService.updateIncome(email, income);
         if (result.equals("User not found")) {
             return ResponseEntity.badRequest().body(result);

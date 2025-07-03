@@ -1,9 +1,11 @@
 package com.example.finsage;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -23,11 +25,12 @@ public class MyUserDetailsService implements UserDetailsService {
             new UsernameNotFoundException("User not found with email: " + email)
         );
 
-        // Return a Spring Security-compatible UserDetails object
+        // ✅ Attach ROLE_<role> authority
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
                 user.getPassword(),
-                Collections.emptyList() // No roles/authorities for now
+                List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole()))
         );
     }
+
 }

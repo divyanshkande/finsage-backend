@@ -31,9 +31,9 @@ public class ExpenseService {
         return expenseRepo.findByUser(user);
     }
 
-    public void deleteExpense(Long id) {
-        expenseRepo.deleteById(id);
-    }
+//    public void deleteExpense(Long id) {
+//        expenseRepo.deleteById(id);
+//    }
 
 	public Map<String, Object> getExpenseSummary(String email) {
         Optional<User> userOpt = userRepo.findByEmail(email);
@@ -65,6 +65,38 @@ public class ExpenseService {
 
         return summary;
     }
+	
+	// For category-wise chart (like Pie chart)
+	public Map<String, Double> getCategoryWise(String email) {
+	    List<Expense> expenses = expenseRepo.findByUserEmail(email);
+	    return expenses.stream()
+	        .collect(Collectors.groupingBy(
+	            Expense::getCategory,
+	            Collectors.summingDouble(Expense::getAmount)
+	        ));
+	}
+
+	// For monthly chart (like Bar chart)
+	public Map<String, Double> getMonthlyExpenses(String email) {
+	    List<Expense> expenses = expenseRepo.findByUserEmail(email);
+	    return expenses.stream()
+	        .collect(Collectors.groupingBy(
+	            e -> e.getDate().toString().substring(0, 7),  // "YYYY-MM"
+	            Collectors.summingDouble(Expense::getAmount)
+	        ));
+	}
+
+	// For deleting a specific expense by ID
+	public void deleteExpenseById(Long id, String email) {
+	    Expense expense = expenseRepo.findById(id).orElseThrow(() -> new RuntimeException("Expense not found"));
+	    
+	    if (!expense.getUser().getEmail().equals(email)) {
+	        throw new RuntimeException("Unauthorized delete attempt");
+	    }
+
+	    expenseRepo.deleteById(id);
+	}
+
 	
 	public String updateIncome(String email, double income) {
         Optional<User> userOpt = userRepo.findByEmail(email);
