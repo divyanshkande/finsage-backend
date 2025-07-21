@@ -2,6 +2,7 @@ package com.example.finsage.service;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 
 import org.springframework.stereotype.Service;
@@ -13,6 +14,7 @@ import com.example.finsage.UserRepository;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 
 @Service
@@ -61,6 +63,21 @@ public class EventService {
 
     public void deleteEvent(Long id, Authentication auth) {
         eventRepository.deleteById(id); // Optional: validate user ownership
+    }
+    
+    public Events updateEventCategoryBreakdown(Long eventId, Map<String, Double> newBreakdown, Authentication auth) {
+        User user = getCurrentUser(auth);
+        Events event = eventRepository.findById(eventId).orElseThrow(() -> new RuntimeException("Event not found"));
+
+        if (!event.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Unauthorized to update this event");
+        }
+
+        event.setCategoryBreakdown(newBreakdown);
+        double totalSpent = newBreakdown.values().stream().mapToDouble(Double::doubleValue).sum();
+        event.setTotalSpent(totalSpent);
+
+        return eventRepository.save(event); // ✅ returning updated event
     }
 
     public Events updateCategoryBreakdown(Long id, Map<String, Double> breakdown, Authentication auth) {

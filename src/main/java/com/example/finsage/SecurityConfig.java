@@ -26,7 +26,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
     @Autowired
-    private JwtFilter jwtFilter;  // JWT Filter for token validation
+    private JwtFilter jwtFilter;  
 
     @Autowired
     private UserDetailsService userDetailsService; // Custom UserDetailsService
@@ -38,7 +38,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // CSRF disabled for stateless JWT auth
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Enable custom CORS
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/register", "/api/auth/login").permitAll() // Public endpoints
+                        .requestMatchers("/api/auth/register", "/api/auth/login","/api/auth/forgot-password",
+                                "/api/auth/reset-password").permitAll() // Public endpoints
                         .anyRequest().authenticated() // Others require auth
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // No session
@@ -62,13 +63,13 @@ public class SecurityConfig {
         return provider;
     }
 
-    // 🔐 AuthenticationManager from config
+  
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 
-    // 🌐 CORS configuration for frontend connection (e.g., React at localhost:5173)
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();

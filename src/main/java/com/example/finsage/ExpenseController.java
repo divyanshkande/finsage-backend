@@ -31,13 +31,34 @@ public class ExpenseController {
     @Autowired
     private UserRepository userRepo;
 
-    @PostMapping("/add")
+    @PostMapping
     public ResponseEntity<?> addExpense(@RequestBody Expense expense, Authentication authentication) {
-        String email = authentication.getName(); // from JWT
-        User user = userRepo.findByEmail(email).orElseThrow();
+        if (authentication == null || authentication.getName() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized access");
+        }
+
+        String email = authentication.getName();
+        System.out.println("🔐 Adding expense for: " + email);
+
+        User user = userRepo.findByEmail(email).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
+        }
+
         expense.setUser(user);
-        return ResponseEntity.ok(expenseService.addExpense(expense));
+        Expense saved = expenseService.addExpense(expense);
+        System.out.println("✅ Saved expense: " + saved);
+
+        return ResponseEntity.ok(saved);
     }
+    
+    @GetMapping
+    public ResponseEntity<List<Expense>> getExpenses(Authentication authentication) {
+        String email = authentication.getName();
+        User user = userRepo.findByEmail(email).orElseThrow();
+        return ResponseEntity.ok(expenseService.getAllExpenses(user));
+    }
+
 
     @GetMapping("/today")
     public ResponseEntity<List<Expense>> getTodayExpenses(Authentication authentication) {

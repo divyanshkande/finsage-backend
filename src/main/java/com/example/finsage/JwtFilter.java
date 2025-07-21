@@ -39,7 +39,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
-        // 🛑 Skip filter for login/register or preflight requests
+        // 🔓 Allow public endpoints and preflight requests
         if ("OPTIONS".equalsIgnoreCase(request.getMethod()) || EXCLUDED_PATHS.contains(path)) {
             filterChain.doFilter(request, response);
             return;
@@ -48,8 +48,14 @@ public class JwtFilter extends OncePerRequestFilter {
         String token = null;
         String email = null;
 
-        // ✅ Get token from cookie
-        if (request.getCookies() != null) {
+        // ✅ Try getting token from Authorization header (preferred)
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
+        }
+
+        // 🔄 Fallback: If no header, try from cookies
+        if (token == null && request.getCookies() != null) {
             token = Arrays.stream(request.getCookies())
                     .filter(cookie -> "token".equals(cookie.getName()))
                     .map(Cookie::getValue)
@@ -62,20 +68,19 @@ public class JwtFilter extends OncePerRequestFilter {
             email = jwtService.extractEmail(token);
         }
 
-        // ✅ If email is valid and not already authenticated
+        // 🔒 Authenticate if email found and no existing auth
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
             if (jwtService.validateToken(token, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
 
-        // Continue filter chain
         filterChain.doFilter(request, response);
     }
+
 }

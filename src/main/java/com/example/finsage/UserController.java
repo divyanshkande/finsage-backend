@@ -100,4 +100,18 @@ public class UserController {
 
         return ResponseEntity.ok(new AuthResponse(null, null));
     }
+    
+    
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestParam String email) {
+        service.sendResetLink(email);
+        return ResponseEntity.ok("Reset link sent");
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestParam String token, @RequestParam String newPassword) {
+        service.resetPassword(token, newPassword);
+        return ResponseEntity.ok("Password updated");
+    }
 }
